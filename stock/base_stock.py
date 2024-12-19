@@ -5,6 +5,8 @@ import logging
 import requests
 from abc import abstractmethod
 
+from . import constants
+
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.ERROR)
 
@@ -43,7 +45,7 @@ class Stock:
             resp = requests.session().get(self._determine_url(), headers=self._get_headers(), proxies=proxy)
             return resp.text
         except Exception as e:
-            print(e)
+            logger.error(f'{constants.NET_REQUEST_ERROR}: {e}')
 
     def parse(self):
         resp = self.request()

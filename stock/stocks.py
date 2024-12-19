@@ -3,7 +3,7 @@ import logging
 
 from .base_stock import Stock
 
-logging.basicConfig(level = logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level = logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
 
 class RealStock(Stock):
