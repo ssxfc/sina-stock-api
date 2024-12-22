@@ -1,5 +1,7 @@
 import unittest
 
+import schedule
+
 from stock.stocks import *
 
 class TestStock(unittest.TestCase):
