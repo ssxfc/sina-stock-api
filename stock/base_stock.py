@@ -36,7 +36,7 @@ class Stock:
         }
     
     def _determine_url(self):
-        assert self.mode in self.urls, f'class:Stock子类的mode属性只能属于{'real'},{'time'},{'trans'}三者之一'
+        assert self.mode in self.urls, f'class:Stock子类的mode属性只能属于real,time,trans三者之一'
         return self.urls[self.mode]
 
     def request(self):
