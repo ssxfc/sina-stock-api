@@ -10,8 +10,8 @@ class RealStock(Stock):
     """
     TODO: 可通过配置文件方式对这种硬编码进行优化.
     """
-    def __init__(self, symbol, num):
-        super(RealStock, self).__init__(symbol, num)
+    def __init__(self, symbol):
+        super(RealStock, self).__init__(symbol, num=1)
         self.mode = 'real'
 
     def parse_resp(self, resp):
@@ -60,7 +60,7 @@ class RealStock(Stock):
 
 
 class DivTime(Stock):
-    def __init__(self, symbol, num):
+    def __init__(self, symbol, num=20):
         super(DivTime, self).__init__(symbol, num)
         self.mode = 'time'
 
@@ -68,20 +68,30 @@ class DivTime(Stock):
         pattern = re.compile("\[.+\]", )
         time_divided = re.search(pattern, resp)
         time_divided = list(eval(time_divided.group(0)))
+
         self.data = {
             'time': time_divided
         }
 
 
 class Trans(Stock):
-    def __init__(self, symbol, num):
+    def __init__(self, symbol, num=20):
         super(Trans, self).__init__(symbol, num)
         self.mode = 'trans'
+        self.nav = ['date', 'volume', 'price', 'buy']
 
     def parse_resp(self, resp):
         pattern = re.compile("\(.+\)")
         trans = re.findall(pattern, resp)
         trans = [tuple(eval(item)) for item in trans]
+        trans = [{self.nav[i]: item[i] for i in range(len(item))} for item in trans]
         self.data = {
-            'trans': trans
+            self.mode: trans
         }
+    
+    def post_process(self):
+        r"""将每笔交易内容都加上ref_id,也就是其所属的股票id信息
+        """
+        for tran in self.data[self.mode]:
+            tran['ref_id'] = 1
+            tran['buy'] = True if tran['buy'] == 'UP' else False

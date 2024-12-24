@@ -1,7 +1,10 @@
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.background import BlockingScheduler
 
 from apscheduler.executors.pool import ThreadPoolExecutor
+
+from .dao.conn import engine
+from .stocks import *
+from .dao.models import TRealStock
 
 
 def task():

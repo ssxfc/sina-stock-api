@@ -1,7 +1,7 @@
 # 导入必要的模块
 from sqlalchemy import Column, Integer, \
     String, Boolean, Float, \
-    Date
+    Date, Time
 from sqlalchemy.orm import declarative_base
 
 from .conn import engine
@@ -57,14 +57,20 @@ class TRealStock(Base):
     ask5_volume = Column(Integer)
     ask5 = Column(Float)
     date = Column(Date)
-    time = Column(String(100))
+    time = Column(Time)
 
-    @classmethod
-    def new_instance(cls, data: dict):
-        obj = cls()
-        for attr, val in data.items():
-            setattr(obj, attr, val)
-        return obj
+    
+class TTrans(Base):
+    __tablename__ = 't_trans'
+    
+    id = Column(Integer, primary_key=True)
+    ref_id = Column(Integer)
+
+    volume = Column(Integer)
+    price = Column(Float)
+    # 当前批次的交易类型，True:买盘；False:卖盘
+    buy = Column(Boolean)
+    date = Column(Time)
 
 
 Base.metadata.create_all(engine)

@@ -50,11 +50,19 @@ class Stock:
     def parse(self):
         resp = self.request()
         self.parse_resp(resp)
+        self.post_process()
+        return self
 
     @abstractmethod
     def parse_resp(self, resp):
         pass
         # raise NotImplementedError("parse_resp() method not implemented for class:Stock")
+
+    @abstractmethod
+    def post_process(self):
+        r"""后置处理方法，具体由子类来实现
+        """
+        pass
 
     def __str__(self):
         return json.dumps(self.data, indent=2)
