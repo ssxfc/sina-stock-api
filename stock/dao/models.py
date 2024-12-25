@@ -17,7 +17,14 @@ class TStock(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100))
     code = Column(String(100))
-    is_good = Column(Boolean)
+    # 交易活跃度
+    hot_val = Column(Integer, default=100)
+    # 是否抓取其数据
+    is_fetch = Column(Boolean, default=False)
+    # 是否被量化程序分析
+    is_analyse = Column(Boolean, default=False)
+    # 股性定性
+    is_good = Column(Boolean, default=False)
 
 
 class TRealStock(Base):

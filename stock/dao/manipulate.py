@@ -1,22 +1,33 @@
+import logging
+
 from sqlalchemy.orm import sessionmaker
 
 from ..stocks import *
 from ..dao.models import TRealStock, TTrans
 from ..dao.conn import engine
+from ..utils.excepts import CannotParsedException
+
+logger = logging.getLogger(__name__)
+
 
 def save_real_stock(code):
-    stock = RealStock(code).parse()
-    logging.info(stock.data[stock.mode])
-    obj = TRealStock(**stock.data[stock.mode])
-    Session = sessionmaker(bind=engine)
-    with Session() as session:
-        session.add(obj)
-        session.commit()
+    try:
+        stock = RealStock(code).parse()
+        logger.info(f"saving {stock.data[stock.mode]['name']} k-line data...")
+        obj = TRealStock(**stock.data[stock.mode])
+        Session = sessionmaker(bind=engine)
+        with Session() as session:
+            session.add(obj)
+            session.commit()
+    except CannotParsedException as e:
+        logger.error(e)
 
 
 def save_trans(code):
     stock = Trans(code).parse()
-    logging.info(stock.data[stock.mode])
+    if len(stock.data[stock.mode]) == 0:
+        logger.warning('empty trans were parsed, please check if the stock code exists or not!')
+        return
     objs = [TTrans(**tran) for tran in stock.data[stock.mode]]
     Session = sessionmaker(bind=engine)
     with Session() as session:

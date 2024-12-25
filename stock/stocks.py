@@ -2,8 +2,32 @@ import re
 import logging
 
 from .base_stock import Stock
+from .utils.excepts import CannotParsedException
 
-logging.basicConfig(level = logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+
+class Trans(Stock):
+    def __init__(self, symbol, num=20):
+        super(Trans, self).__init__(symbol, num)
+        self.mode = 'trans'
+        self.nav = ['date', 'volume', 'price', 'buy']
+
+    def parse_resp(self, resp):
+        pattern = re.compile("\(.+\)")
+        trans = re.findall(pattern, resp)
+        trans = [tuple(eval(item)) for item in trans]
+        trans = [{self.nav[i]: item[i] for i in range(len(item))} for item in trans]
+        self.data = {
+            self.mode: trans
+        }
+    
+    def post_process(self):
+        r"""将每笔交易内容都加上ref_id,也就是其所属的股票id信息
+        """
+        for tran in self.data[self.mode]:
+            tran['ref_id'] = 1
+            tran['buy'] = True if tran['buy'] == 'UP' else False
 
 
 class RealStock(Stock):
@@ -15,12 +39,15 @@ class RealStock(Stock):
         self.mode = 'real'
 
     def parse_resp(self, resp):
+        origin_resp = resp
         stock_dict = {}
         # 字符串截取
         resp = resp[resp.index("\"") + 1: len(resp) - 1]
         if resp.endswith(","):
             resp = resp[:-1]
         stock = resp.split(",")
+        if len(stock) < 32:
+            raise CannotParsedException(f"resp不完整: {origin_resp}")
         stock_dict["name"] = stock[0]
         stock_dict["open"] = stock[1]
         stock_dict["prevclose"] = stock[2]
@@ -67,31 +94,10 @@ class DivTime(Stock):
     def parse_resp(self, resp):
         pattern = re.compile("\[.+\]", )
         time_divided = re.search(pattern, resp)
+        if time_divided is None:
+            raise CannotParsedException(f"resp不完整: {resp}")
         time_divided = list(eval(time_divided.group(0)))
 
         self.data = {
             'time': time_divided
         }
-
-
-class Trans(Stock):
-    def __init__(self, symbol, num=20):
-        super(Trans, self).__init__(symbol, num)
-        self.mode = 'trans'
-        self.nav = ['date', 'volume', 'price', 'buy']
-
-    def parse_resp(self, resp):
-        pattern = re.compile("\(.+\)")
-        trans = re.findall(pattern, resp)
-        trans = [tuple(eval(item)) for item in trans]
-        trans = [{self.nav[i]: item[i] for i in range(len(item))} for item in trans]
-        self.data = {
-            self.mode: trans
-        }
-    
-    def post_process(self):
-        r"""将每笔交易内容都加上ref_id,也就是其所属的股票id信息
-        """
-        for tran in self.data[self.mode]:
-            tran['ref_id'] = 1
-            tran['buy'] = True if tran['buy'] == 'UP' else False
