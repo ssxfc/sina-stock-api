@@ -6,6 +6,7 @@ import requests
 from abc import abstractmethod
 
 from . import constants
+from .utils.code import preprecess
 
 logger = logging.getLogger(__name__)
 logger.setLevel(level=logging.ERROR)
@@ -15,14 +16,16 @@ class Stock:
     r"""新浪股票数据接口.
     """
     def __init__(self, symbol, num):
+        preprocessed_symbol = preprecess(symbol)
         self.urls = {
-            'real': f"https://hq.sinajs.cn/rn={int(time.time() * 1000)}&list={symbol}",
+            'real': f"https://hq.sinajs.cn/rn={int(time.time() * 1000)}&list={preprocessed_symbol}",
             'time': f"https://vip.stock.finance.sina.com.cn/quotes_service/view/vML_DataList.php? \
-                asc=j&symbol={symbol}&num={num}", 
+                asc=j&symbol={preprocessed_symbol}&num={num}", 
             'trans': f"https://vip.stock.finance.sina.com.cn/quotes_service/view/CN_TransListV2.php? \
-                symbol={symbol}&num={num}"
+                symbol={preprocessed_symbol}&num={num}"
         }
         self.mode = None
+        self.code = preprocessed_symbol
 
     def _get_headers(self):
         return {

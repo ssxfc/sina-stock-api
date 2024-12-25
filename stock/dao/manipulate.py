@@ -3,7 +3,7 @@ import logging
 from sqlalchemy.orm import sessionmaker
 
 from ..stocks import *
-from ..dao.models import TRealStock, TTrans
+from ..dao.models import TRealStock, TTrans, TStock
 from ..dao.conn import engine
 from ..utils.excepts import CannotParsedException
 
@@ -32,4 +32,13 @@ def save_trans(code):
     Session = sessionmaker(bind=engine)
     with Session() as session:
         session.add_all(objs)
+        session.commit()
+
+
+def save_baseline(stock: TStock):
+    r"""保存基线股票信息
+    """
+    Session = sessionmaker(bind=engine)
+    with Session() as session:
+        session.add(stock)
         session.commit()
